@@ -265,6 +265,49 @@
 								<?php } ?>
 
 								<?php
+								// Display Facilities using ACF fields
+								$facilities_list = [
+									'after_hours' => 'After Hours Service',
+									'atm_on_site' => 'ATM On Site',
+									'cash_payment' => 'Cash Payment',
+									'credit_card' => 'Credit Card',
+									'direct_debit' => 'Direct Debit',
+									'delivery_service' => 'Delivery Service',
+									'ev_charge_station' => 'EV Charge Station',
+									'free_quotes' => 'Free Quotes',
+									'in_store_pickup' => 'In Store Pickup',
+									'mobile_service' => 'Mobile Service',
+									'pensioner_discount' => 'Pensioner Discount'
+								];
+
+								$selected_facilities = array();
+
+								// Check each facility field - values are 0 or 1
+								foreach ($facilities_list as $facility_key => $facility_label) {
+									$field_value = get_field('facilities_' . $facility_key, $listing_id);
+
+									// If value is 1, facility is selected
+									if ($field_value == 1) {
+										$selected_facilities[$facility_key] = $facility_label;
+									}
+								}
+
+								// Display facilities if any are selected
+								if (!empty($selected_facilities)) {
+									echo '<div class="contact-info">';
+									echo '<h3>Facilities & Services</h3>';
+									echo '<ul style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">';
+
+									foreach ($selected_facilities as $facility_key => $facility_label) {
+										echo '<li><i class="fas fa-check"></i>' . $facility_label . '</li>';
+									}
+
+									echo '</ul>';
+									echo '</div>';
+								}
+								?>
+
+								<?php
 								$listings_info_group = get_field( 'listing_information_group', $listing_id );
 								if ( $listings_info_group['licences'] ) {
 									echo '<div class="contact-info">';

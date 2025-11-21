@@ -484,9 +484,53 @@
                 <?php $section = 'facilities'; ?>
                 <div id="<?php echo $section; ?>_section" class="section" <?php if(isset($_GET['section']) && $_GET['section'] == $section) { echo 'style="display:block;"'; } else { echo 'style="display:none;"'; } ?>>
                     <p class="section_heading">Facilities</p>
-                    <p class="section_subheading">Tell us who you are and where you operate.</p>
+                    <p class="section_subheading">Select the facilities and services available at your business.</p>
                     <form id="<?php echo $section; ?>_form" method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" enctype="multipart/form-data">
+                        <div class="grid-cols-2 grid gap-4">
+                            <div class="col-span-2">
+                                <label for="<?php echo $field_name; ?>">Facilities</label>
+                                <div style="margin-bottom:15px;">
+                                    <?php
+                                        $facilties = [
+                                            'after_hours',
+                                            'atm_on_site',
+                                            'cash_payment',
+                                            'credit_card',
+                                            'direct_debit',
+                                            'delivery_service',
+                                            'ev_charge_station',
+                                            'free_quotes',
+                                            'in_store_pickup',
+                                            'mobile_service',
+                                            'pensioner_discount',
+                                        ];
 
+                                        foreach ($facilties as $field_name) {
+                                            // Retrieve the ACF field value for this facility
+                                            $acf_field_name = 'facilities_' . $field_name;
+                                            $is_checked_value = get_field($acf_field_name, $listing_id);
+
+                                            // Check if value is 1 (checked)
+                                            $is_checked = ($is_checked_value == 1) ? 'checked' : '';
+                                            ?>
+                                                <div class="flex justify-start">
+                                                    <input type="checkbox"
+                                                           name="<?php echo $field_name; ?>"
+                                                           id="<?php echo $field_name; ?>"
+                                                           style="margin-right:10px;"
+                                                           value="<?php echo ucwords(str_replace('_', ' ', $field_name)); ?>"
+                                                           <?php echo $is_checked; ?>>
+                                                    <label for="<?php echo $field_name; ?>" style="cursor: pointer;">
+                                                        <?php echo ucwords(str_replace('_',' ', $field_name)); ?>
+                                                    </label>
+                                                    <?php renderErrorFieldMessage($field_name, $section) ?>
+                                                </div>
+                                            <?php
+                                        }
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
                         <?php wp_nonce_field('edit_listing_nonce', 'nonce'); ?>
                         <input type="hidden" name="action" value="edit_listing"/>
                         <input type="hidden" name="section" value="<?php echo $section; ?>"/>

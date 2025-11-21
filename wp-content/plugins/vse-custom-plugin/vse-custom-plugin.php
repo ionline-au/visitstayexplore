@@ -2025,7 +2025,6 @@ function edit_listing_callback() {
             }
 
             // Handle gallery uploads (multiple images) - stored in ACF field 'branding_gallery'
-            // Get existing gallery from ACF - returns array format
             $gallery_field_name = $data['section'] . '_gallery';
             $existing_gallery = get_field($gallery_field_name, $data['listing_id']);
 
@@ -2048,8 +2047,6 @@ function edit_listing_callback() {
 
             // Remove deleted images if any
             if (!empty($data['gallery_removed_ids'])) {
-                // Handle escaped JSON - stripslashes to remove the escape characters
-                // The JSON comes in as [\"116057\",\"116056\"] and needs to be ["116057","116056"]
                 $gallery_removed_json = stripslashes($data['gallery_removed_ids']);
                 $removed_ids = json_decode($gallery_removed_json, true);
 
@@ -2069,13 +2066,12 @@ function edit_listing_callback() {
                         continue;
                     }
 
-                    // Reconstruct $_FILES array for single file
                     $_FILES['gallery_single'] = array(
-                        'name'     => $files['name'][$i],
-                        'type'     => $files['type'][$i],
+                        'name' => $files['name'][$i],
+                        'type' => $files['type'][$i],
                         'tmp_name' => $files['tmp_name'][$i],
-                        'error'    => $files['error'][$i],
-                        'size'     => $files['size'][$i]
+                        'error' => $files['error'][$i],
+                        'size' => $files['size'][$i]
                     );
 
                     $gallery_img_id = handle_image_upload('gallery_single', $data['listing_id']);
@@ -2089,22 +2085,53 @@ function edit_listing_callback() {
                 }
             }
 
-            // Only update ACF field if there were changes OR if we have images to preserve
             if ($gallery_modified || !empty($gallery_ids_array)) {
-                // Clean array, remove duplicates and reindex
                 $gallery_ids_array = array_values(array_unique(array_map('intval', $gallery_ids_array)));
-
-                // Save to ACF gallery field - ACF will handle the array format based on field settings
                 update_field($gallery_field_name, $gallery_ids_array, $data['listing_id']);
             }
-            // If gallery is empty AND user explicitly removed all images, clear the field
             elseif (empty($gallery_ids_array) && $gallery_modified) {
                 delete_field($gallery_field_name, $data['listing_id']);
             }
-            // Otherwise, leave the existing gallery unchanged
 
             break;
         case 'facilities':
+
+            $facilities_list = [
+                'after_hours',
+                'atm_on_site',
+                'cash_payment',
+                'credit_card',
+                'direct_debit',
+                'delivery_service',
+                'ev_charge_station',
+                'free_quotes',
+                'in_store_pickup',
+                'mobile_service',
+                'pensioner_discount'
+            ];
+
+            foreach ($facilities_list as $facility) {
+                $field_name = 'facilities_' . $facility;
+                if (isset($data[$facility]) && !empty($data[$facility])) {
+                    update_field($field_name, 1, $data['listing_id']);
+                } else {
+                    update_field($field_name, 0, $data['listing_id']);
+                }
+            }
+
+            $selected_facilities = array();
+            foreach ($facilities_list as $facility) {
+                if (isset($data[$facility]) && !empty($data[$facility])) {
+                    $selected_facilities[] = $facility;
+                }
+            }
+
+            if (!empty($selected_facilities)) {
+                update_field('facilities_selected', $selected_facilities, $data['listing_id']);
+            } else {
+                update_field('facilities_selected', array(), $data['listing_id']);
+            }
+
             break;
         case 'contact':
             break;
