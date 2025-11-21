@@ -514,15 +514,8 @@
                                             $is_checked = ($is_checked_value == 1) ? 'checked' : '';
                                             ?>
                                                 <div class="flex justify-start">
-                                                    <input type="checkbox"
-                                                           name="<?php echo $field_name; ?>"
-                                                           id="<?php echo $field_name; ?>"
-                                                           style="margin-right:10px;"
-                                                           value="<?php echo ucwords(str_replace('_', ' ', $field_name)); ?>"
-                                                           <?php echo $is_checked; ?>>
-                                                    <label for="<?php echo $field_name; ?>" style="cursor: pointer;">
-                                                        <?php echo ucwords(str_replace('_',' ', $field_name)); ?>
-                                                    </label>
+                                                    <input type="checkbox" name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" style="margin-right:10px;" value="<?php echo ucwords(str_replace('_', ' ', $field_name)); ?>"<?php echo $is_checked; ?>>
+                                                    <?php echo ucwords(str_replace('_',' ', $field_name)); ?>
                                                     <?php renderErrorFieldMessage($field_name, $section) ?>
                                                 </div>
                                             <?php
