@@ -2134,6 +2134,72 @@ function edit_listing_callback() {
 
             break;
         case 'contact':
+            // Validate mandatory fields
+            if (empty($data['phone'])) {
+                $errorBag['phone'] = 'Phone number is required.';
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_phone', $data['phone']);
+
+            if (empty($data['mobile'])) {
+                $errorBag['mobile'] = 'Mobile number is required.';
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_mobile', $data['mobile']);
+
+            if (empty($data['email'])) {
+                $errorBag['email'] = 'Email address is required.';
+            } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                $errorBag['email'] = 'Please enter a valid email address.';
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_email', $data['email']);
+
+            if (empty($data['address'])) {
+                $errorBag['address'] = 'Address is required.';
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_address', $data['address']);
+
+            // Validate and save optional URL fields
+            if (!empty($data['website'])) {
+                if (!filter_var($data['website'], FILTER_VALIDATE_URL)) {
+                    $errorBag['website'] = 'Please enter a valid website URL (e.g., https://www.example.com).';
+                }
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_website', $data['website'] ?? '');
+
+            // Save business hours (no validation required)
+            update_post_meta($data['listing_id'], $data['section'].'_business_hours', $data['business_hours'] ?? '');
+
+            // Validate and save ABN (optional, but if provided should be valid format)
+            if (!empty($data['abn'])) {
+                // Remove spaces and check if it's 11 digits
+                $abn_clean = preg_replace('/\s+/', '', $data['abn']);
+                if (!preg_match('/^[0-9]{11}$/', $abn_clean)) {
+                    $errorBag['abn'] = 'ABN must be 11 digits.';
+                }
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_abn', $data['abn'] ?? '');
+
+            // Validate and save social media links
+            if (!empty($data['facebook_link'])) {
+                if (!filter_var($data['facebook_link'], FILTER_VALIDATE_URL)) {
+                    $errorBag['facebook_link'] = 'Please enter a valid Facebook URL.';
+                }
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_facebook_link', $data['facebook_link'] ?? '');
+
+            if (!empty($data['instagram_link'])) {
+                if (!filter_var($data['instagram_link'], FILTER_VALIDATE_URL)) {
+                    $errorBag['instagram_link'] = 'Please enter a valid Instagram URL.';
+                }
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_instagram_link', $data['instagram_link'] ?? '');
+
+            if (!empty($data['x_link'])) {
+                if (!filter_var($data['x_link'], FILTER_VALIDATE_URL)) {
+                    $errorBag['x_link'] = 'Please enter a valid X (Twitter) URL.';
+                }
+            }
+            update_post_meta($data['listing_id'], $data['section'].'_x_link', $data['x_link'] ?? '');
+
             break;
         case 'submit':
             break;

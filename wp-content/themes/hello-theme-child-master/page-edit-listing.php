@@ -539,9 +539,127 @@
 
                 <?php $section = 'contact'; ?>
                 <div id="<?php echo $section; ?>_section" class="section" <?php if(isset($_GET['section']) && $_GET['section'] == $section) { echo 'style="display:block;"'; } else { echo 'style="display:none;"'; } ?>>
-                    <p class="section_heading">Contact</p>
-                    <p class="section_subheading">Tell us who you are and where you operate.</p>
+                    <p class="section_heading">Contact & Details</p>
+                    <p class="section_subheading">Provide your contact information and business details.</p>
                     <form id="<?php echo $section; ?>_form" method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" enctype="multipart/form-data">
+                        <div class="grid-cols-2 grid gap-4">
+                            <div class="col-span-1">
+                                <?php $field_name = 'phone'; ?>
+                                <label for="<?php echo $field_name; ?>">Phone <span class="mandatory">*</span></label>
+                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="text" value="<?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?>" />
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">Your main business phone number</div>
+                                </div>
+                            </div>
+                            <div class="col-span-1">
+                                <?php $field_name = 'mobile'; ?>
+                                <label for="<?php echo $field_name; ?>">Mobile <span class="mandatory">*</span></label>
+                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="text" value="<?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?>" />
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">Mobile number for customer contact</div>
+                                </div>
+                            </div>
+                            <div class="col-span-1">
+                                <?php $field_name = 'email'; ?>
+                                <label for="<?php echo $field_name; ?>">Email <span class="mandatory">*</span></label>
+                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="email" value="<?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?>" />
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">Business email address</div>
+                                </div>
+                            </div>
+                            <div class="col-span-1">
+                                <?php $field_name = 'website'; ?>
+                                <label for="<?php echo $field_name; ?>">Website</label>
+                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="text" value="<?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?>" placeholder="https://www.example.com" />
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">Your business website (optional)</div>
+                                </div>
+                            </div>
+                            <div class="col-span-2">
+                                <?php $field_name = 'address'; ?>
+                                <label for="<?php echo $field_name; ?>">Address <span class="mandatory">*</span></label>
+                                <textarea name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" rows="3"><?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?></textarea>
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center -mt-1!">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">Full physical address of your business</div>
+                                </div>
+                            </div>
+                            <div class="col-span-2">
+                                <?php $field_name = 'business_hours'; ?>
+                                <label for="<?php echo $field_name; ?>">Business Hours</label>
+                                <textarea name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" rows="5" placeholder="Monday: 9:00 AM - 5:00 PM&#10;Tuesday: 9:00 AM - 5:00 PM&#10;Wednesday: 9:00 AM - 5:00 PM&#10;Thursday: 9:00 AM - 5:00 PM&#10;Friday: 9:00 AM - 5:00 PM&#10;Saturday: 10:00 AM - 2:00 PM&#10;Sunday: Closed"><?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?></textarea>
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center -mt-1!">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">List your operating hours for each day (optional)</div>
+                                </div>
+                            </div>
+                            <div class="col-span-1">
+                                <?php $field_name = 'abn'; ?>
+                                <label for="<?php echo $field_name; ?>">ABN</label>
+                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="text" value="<?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?>" placeholder="12 345 678 901" />
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">Australian Business Number (optional)</div>
+                                </div>
+                            </div>
+                            <div class="col-span-1">
+                                <!-- Empty column for layout balance -->
+                            </div>
+                            <div class="col-span-2">
+                                <label>Social Media Links</label>
+                                <div class="grid-cols-3 grid gap-4">
+                                    <div class="col-span-1">
+                                        <?php $field_name = 'facebook_link'; ?>
+                                        <label for="<?php echo $field_name; ?>" style="font-weight: normal; font-size: 14px;">Facebook</label>
+                                        <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="text" value="<?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?>" placeholder="https://facebook.com/yourpage" />
+                                        <?php renderErrorFieldMessage($field_name, $section) ?>
+                                    </div>
+                                    <div class="col-span-1">
+                                        <?php $field_name = 'instagram_link'; ?>
+                                        <label for="<?php echo $field_name; ?>" style="font-weight: normal; font-size: 14px;">Instagram</label>
+                                        <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="text" value="<?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?>" placeholder="https://instagram.com/yourpage" />
+                                        <?php renderErrorFieldMessage($field_name, $section) ?>
+                                    </div>
+                                    <div class="col-span-1">
+                                        <?php $field_name = 'x_link'; ?>
+                                        <label for="<?php echo $field_name; ?>" style="font-weight: normal; font-size: 14px;">X (Twitter)</label>
+                                        <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="text" value="<?php echo get_post_meta($listing_id, $section . '_' . $field_name, true); ?>" placeholder="https://x.com/yourpage" />
+                                        <?php renderErrorFieldMessage($field_name, $section) ?>
+                                    </div>
+                                </div>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">Add links to your social media profiles (optional)</div>
+                                </div>
+                            </div>
+                        </div>
 
                         <?php wp_nonce_field('edit_listing_nonce', 'nonce'); ?>
                         <input type="hidden" name="action" value="edit_listing"/>
