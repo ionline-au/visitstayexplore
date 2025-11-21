@@ -91,11 +91,9 @@
                                                         localEl.tomselect.addOption(response.data.terms);
                                                         localEl.tomselect.refreshOptions(false);
 
-                                                        // Restore saved local area values
-                                                        if (window.savedLocalAreaValue && window.savedLocalAreaValue.length > 0) {
-                                                            window.savedLocalAreaValue.forEach(function(value) {
-                                                                localEl.tomselect.addItem(value, true);
-                                                            });
+                                                        // Restore saved local area value (single value now)
+                                                        if (window.savedLocalAreaValue && window.savedLocalAreaValue !== "") {
+                                                            localEl.tomselect.addItem(window.savedLocalAreaValue, true);
                                                         }
                                                     }
 
@@ -158,39 +156,42 @@
                                     </svg>
                                     <div class="ml-1">A short intro shown at the top of your listing (1–2 sentences)</div>
                                 </div>
-
                             </div>
                             <div class="col-span-1">
                                 <?php $field_name = 'localarea'; ?>
                                 <label for="<?php echo $field_name; ?>">Your Local Service Area <span class="mandatory">*</span></label>
                                 <?php $regions = get_terms('region', array('hide_empty' => false, 'parent' => 0)); ?>
-                                <select name="<?php echo $field_name; ?>[]" id="<?php echo $field_name; ?>" autocomplete="off" multiple placeholder="Select a service area ...">
+                                <select name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" autocomplete="off" placeholder="Select a service area ...">
                                 </select>
                                 <?php
                                     // Store saved local area value for restoration after AJAX
                                     $saved_localarea_raw = get_post_meta($listing_id, $section . '_' . $field_name, true);
                                     $localarea_item_string = '';
 
-                                    // Try to decode as JSON first (new format), fallback to string (old format)
-                                    $decoded_localarea = json_decode($saved_localarea_raw);
-                                    if (is_array($decoded_localarea) && count($decoded_localarea) > 0) {
-                                        // New JSON format
-                                        foreach ($decoded_localarea as $item) {
-                                            $localarea_item_string .= '"' . $item . '",';
+                                    // Handle single value (can be JSON string or plain string)
+                                    if (!empty($saved_localarea_raw)) {
+                                        // Try to decode as JSON first
+                                        $decoded_localarea = json_decode($saved_localarea_raw);
+                                        if (is_array($decoded_localarea) && count($decoded_localarea) > 0) {
+                                            // For backwards compatibility with old multi-select data, take the first item
+                                            $localarea_item_string = '"' . $decoded_localarea[0] . '"';
+                                        } elseif (is_string($decoded_localarea)) {
+                                            // JSON-encoded single string
+                                            $localarea_item_string = '"' . $decoded_localarea . '"';
+                                        } else {
+                                            // Plain string format
+                                            $localarea_item_string = '"' . $saved_localarea_raw . '"';
                                         }
-                                        $localarea_item_string = rtrim($localarea_item_string, ',');
-                                    } elseif (!empty($saved_localarea_raw) && !is_array($decoded_localarea)) {
-                                        // Old string format (for existing data)
-                                        $localarea_item_string = '"' . $saved_localarea_raw . '"';
                                     }
                                 ?>
                                 <?php renderErrorFieldMessage($field_name, $section) ?>
                                 <script>
-                                    // Store saved value for restoration after AJAX loads
-                                    window.savedLocalAreaValue = <?php echo !empty($localarea_item_string) ? '[' . $localarea_item_string . ']' : '[]'; ?>;
+                                    // Store saved value for restoration after AJAX loads (single value now)
+                                    window.savedLocalAreaValue = <?php echo !empty($localarea_item_string) ? $localarea_item_string : '""'; ?>;
 
                                     new TomSelect("#<?php echo $field_name; ?>", {
                                         create: true,
+                                        maxItems: 1,  // Enforce single selection
                                         sortField: {
                                             field: "text",
                                             direction: "asc"
@@ -212,7 +213,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                                         <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
                                     </svg>
-                                    <div class="ml-1">Tap backspace on your keyboard to remove selections</div>
+                                    <div class="ml-1">Select your primary local service area</div>
                                 </div>
 
                             </div>
@@ -339,8 +340,86 @@
                 <?php $section = 'branding'; ?>
                 <div id="<?php echo $section; ?>_section" class="section" <?php if(isset($_GET['section']) && $_GET['section'] == $section) { echo 'style="display:block;"'; } else { echo 'style="display:none;"'; } ?>>
                     <p class="section_heading">Branding</p>
-                    <p class="section_subheading">Tell us who you are and where you operate.</p>
+                    <p class="section_subheading">Add your logo, hero banner and gallery.</p>
                     <form id="<?php echo $section; ?>_form" method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" enctype="multipart/form-data">
+
+                        <div class="grid-cols-2 grid gap-4">
+                            <div class="col-span-2">
+                                <?php $field_name = 'logo'; ?>
+                                <label for="<?php echo $field_name; ?>">Logo <span class="mandatory">*</span></label>
+                                <br>
+                                <?php
+                                $logo_id = get_post_meta($listing_id, $section . '_' . $field_name, true);
+                                if ($logo_id) {
+                                    $logo_url = wp_get_attachment_image_url($logo_id, 'medium');
+                                    if ($logo_url) {
+                                        echo '<div style="margin-bottom: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
+                                        echo '<img src="' . esc_url($logo_url) . '" style="max-width: 200px; height: auto; display: block; margin-bottom: 5px;" />';
+                                        echo '<small style="color: #666;">Current logo (upload a new one to replace)</small>';
+                                        echo '</div>';
+                                    }
+                                }
+                                ?>
+                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="file" class="file_input" accept="image/jpeg,image/jpg,image/png,image/webp" />
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">PNG/JPG/WebP. Max 5MB.</div>
+                                </div>
+                            </div>
+                            <div class="col-span-2">
+                                <?php $field_name = 'hero_banner'; ?>
+                                <label for="<?php echo $field_name; ?>">Hero Banner <span class="mandatory">*</span></label>
+                                <br>
+                                <?php
+                                $hero_id = get_post_meta($listing_id, $section . '_' . $field_name, true);
+                                if ($hero_id) {
+                                    $hero_url = wp_get_attachment_image_url($hero_id, 'large');
+                                    if ($hero_url) {
+                                        echo '<div style="margin-bottom: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
+                                        echo '<img src="' . esc_url($hero_url) . '" style="max-width: 100%; height: auto; display: block; margin-bottom: 5px;" />';
+                                        echo '<small style="color: #666;">Current hero banner (upload a new one to replace)</small>';
+                                        echo '</div>';
+                                    }
+                                }
+                                ?>
+                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="file" class="file_input" accept="image/jpeg,image/jpg,image/png,image/webp" />
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">PNG/JPG/WebP. Max 5MB. Recommended: 1920x600px</div>
+                                </div>
+                            </div>
+                            <div class="col-span-2">
+                                <?php $field_name = 'gallery'; ?>
+                                <label for="<?php echo $field_name; ?>">Gallery Photo</label>
+                                <br>
+                                <?php
+                                $gallery_id = get_post_meta($listing_id, $section . '_' . $field_name, true);
+                                if ($gallery_id) {
+                                    $gallery_url = wp_get_attachment_image_url($gallery_id, 'medium');
+                                    if ($gallery_url) {
+                                        echo '<div style="margin-bottom: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
+                                        echo '<img src="' . esc_url($gallery_url) . '" style="max-width: 300px; height: auto; display: block; margin-bottom: 5px;" />';
+                                        echo '<small style="color: #666;">Current gallery photo (upload a new one to replace)</small>';
+                                        echo '</div>';
+                                    }
+                                }
+                                ?>
+                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="file" class="file_input" accept="image/jpeg,image/jpg,image/png,image/webp" />
+                                <?php renderErrorFieldMessage($field_name, $section) ?>
+                                <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                        <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="ml-1">PNG/JPG/WebP. Max 5MB. (Optional)</div>
+                                </div>
+                            </div>
+                        </div>
 
                         <?php wp_nonce_field('edit_listing_nonce', 'nonce'); ?>
                         <input type="hidden" name="action" value="edit_listing"/>

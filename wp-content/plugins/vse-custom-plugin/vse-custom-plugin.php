@@ -1878,6 +1878,67 @@ function enqueue_edit_listing_scripts_styles() {
 
 // @todo: make sure that the field names line up with acf
 
+/**
+ * Handle image upload to WordPress media library
+ *
+ * @param string $file_key The $_FILES array key
+ * @param int $listing_id The post ID to attach the image to
+ * @return int|WP_Error The attachment ID on success, WP_Error on failure
+ */
+function handle_image_upload($file_key, $listing_id) {
+    // Check if file was uploaded
+    if (empty($_FILES[$file_key]['name'])) {
+        return new WP_Error('no_file', 'No file was uploaded.');
+    }
+
+    // Validate file type
+    $allowed_types = array('image/jpeg', 'image/jpg', 'image/png', 'image/webp');
+    $file_type = $_FILES[$file_key]['type'];
+
+    if (!in_array($file_type, $allowed_types)) {
+        return new WP_Error('invalid_type', 'Only JPG, PNG, and WebP images are allowed.');
+    }
+
+    // Validate file size (5MB max)
+    $max_size = 5 * 1024 * 1024; // 5MB in bytes
+    if ($_FILES[$file_key]['size'] > $max_size) {
+        return new WP_Error('file_too_large', 'File size must be less than 5MB.');
+    }
+
+    // WordPress upload handling
+    require_once(ABSPATH . 'wp-admin/includes/image.php');
+    require_once(ABSPATH . 'wp-admin/includes/file.php');
+    require_once(ABSPATH . 'wp-admin/includes/media.php');
+
+    // Handle the upload
+    $upload = wp_handle_upload($_FILES[$file_key], array('test_form' => false));
+
+    if (isset($upload['error'])) {
+        return new WP_Error('upload_error', $upload['error']);
+    }
+
+    // Prepare attachment data
+    $attachment = array(
+        'post_mime_type' => $upload['type'],
+        'post_title'     => sanitize_file_name($upload['file']),
+        'post_content'   => '',
+        'post_status'    => 'inherit'
+    );
+
+    // Insert attachment into media library
+    $attachment_id = wp_insert_attachment($attachment, $upload['file'], $listing_id);
+
+    if (is_wp_error($attachment_id)) {
+        return $attachment_id;
+    }
+
+    // Generate attachment metadata
+    $attachment_data = wp_generate_attachment_metadata($attachment_id, $upload['file']);
+    wp_update_attachment_metadata($attachment_id, $attachment_data);
+
+    return $attachment_id;
+}
+
 // add wp ajax action to process basics_form_save_action
 add_action('wp_ajax_edit_listing', 'edit_listing_callback');
 add_action('wp_ajax_nopriv_edit_listing', 'edit_listing_callback');
@@ -1919,8 +1980,8 @@ function edit_listing_callback() {
             if (empty($data['localarea'])) {
                 $errorBag['localarea'] = 'Local Area is required.';
             }
-            // Save localarea as JSON encoded like additionalareas for consistency
-            update_post_meta($data['listing_id'], $data['section'].'_localarea', json_encode($data['localarea']));
+            $localarea_value = is_array($data['localarea']) ? $data['localarea'][0] : $data['localarea'];
+            update_post_meta($data['listing_id'], $data['section'].'_localarea', json_encode($localarea_value));
 
             if (empty($data['additionalareas'])) {
                 $errorBag['additionalareas'] = 'Additional Areas is required.';
@@ -1939,6 +2000,41 @@ function edit_listing_callback() {
 
             break;
         case 'branding':
+            // Handle logo upload
+            if (isset($_FILES['logo']) && !empty($_FILES['logo']['name'])) {
+                $logo_id = handle_image_upload('logo', $data['listing_id']);
+                if (is_wp_error($logo_id)) {
+                    $errorBag['logo'] = $logo_id->get_error_message();
+                } else {
+                    update_post_meta($data['listing_id'], $data['section'].'_logo', $logo_id);
+                }
+            } elseif (empty(get_post_meta($data['listing_id'], $data['section'].'_logo', true))) {
+                $errorBag['logo'] = 'Logo is required.';
+            }
+
+            // Handle hero banner upload
+            if (isset($_FILES['hero_banner']) && !empty($_FILES['hero_banner']['name'])) {
+                $hero_id = handle_image_upload('hero_banner', $data['listing_id']);
+                if (is_wp_error($hero_id)) {
+                    $errorBag['hero_banner'] = $hero_id->get_error_message();
+                } else {
+                    update_post_meta($data['listing_id'], $data['section'].'_hero_banner', $hero_id);
+                }
+            } elseif (empty(get_post_meta($data['listing_id'], $data['section'].'_hero_banner', true))) {
+                $errorBag['hero_banner'] = 'Hero banner is required.';
+            }
+
+            // Handle gallery upload (optional for now)
+            if (isset($_FILES['gallery']) && !empty($_FILES['gallery']['name'])) {
+                $gallery_id = handle_image_upload('gallery', $data['listing_id']);
+                if (is_wp_error($gallery_id)) {
+                    $errorBag['gallery'] = $gallery_id->get_error_message();
+                } else {
+                    // Gallery could be multiple images, for now storing single ID
+                    update_post_meta($data['listing_id'], $data['section'].'_gallery', $gallery_id);
+                }
+            }
+
             break;
         case 'facilities':
             break;
