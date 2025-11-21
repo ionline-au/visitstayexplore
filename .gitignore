@@ -1,0 +1,35 @@
+# Ignore everything by default
+/*
+
+# But include these specific items:
+
+# Include .gitignore itself
+!/.gitignore
+
+# Include CLAUDE.md
+!/CLAUDE.md
+
+# Include wp-content directory (so we can traverse into it)
+!/wp-content/
+
+# Ignore everything in wp-content by default
+/wp-content/*
+
+# But include the plugins directory
+!/wp-content/plugins/
+
+# Ignore everything in plugins by default
+/wp-content/plugins/*
+
+# Include specific custom plugins
+!/wp-content/plugins/vse-custom-plugin/
+!/wp-content/plugins/vse-listings/
+
+# Include the themes directory
+!/wp-content/themes/
+
+# Ignore everything in themes by default
+/wp-content/themes/*
+
+# Include specific custom theme
+!/wp-content/themes/hello-theme-child-master/

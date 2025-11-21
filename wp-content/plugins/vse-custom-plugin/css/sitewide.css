@@ -1,0 +1,111 @@
+.euphoria-script-regular {
+    font-family: "Euphoria Script", cursive;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.switch-html {
+    background: #f6f7f7;
+    color: #50575e !important;
+    border-bottom-color: #f6f7f7;
+}
+
+@media (min-width: 1200px) {
+    .contact-info {
+        padding-top: 25px;
+    }
+    .hide_for_desktop {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .contact-info {
+        padding-top: 25px;
+    }
+    .hide_for_desktop {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .contact-info {
+        padding-top: 25px;
+    }
+
+    .region-homepage-padding {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+    .hide_for_mobile {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-info {
+        padding-top: 25px;
+    }
+
+    .region-homepage-padding {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+    .hide_for_mobile {
+        display: none;
+    }
+}
+
+#map {
+    height: 400px;
+    width: 100%;
+}
+
+.contact-info ul li {
+    margin-bottom: 10px !important;
+    font-family: "Work Sans", Sans-serif;
+}
+
+#adv-custom-pager > a:nth-child(0) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(1) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(2) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(3) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(4) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(5) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(6) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(7) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(8) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(9) > img {
+    padding-right: 10px !important;
+}
+
+#adv-custom-pager > a:nth-child(10) > img {
+    padding-right: 10px !important;
+}

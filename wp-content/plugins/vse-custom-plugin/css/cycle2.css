@@ -1,0 +1,42 @@
+.testimonial_cont {
+    width: 100%;
+}
+.testimonial_img_cont {
+    width: 15%;
+    float: left;
+}
+.testimonial_content_cont {
+    background-color: #F4F4F4;
+    width: 85%;
+    float: right;
+    padding: 1rem;
+}
+.person {
+    width: 120px;
+    height: 120px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    border-radius: 50%;
+}
+.quotes {
+    font-size: 2rem !important;
+    color: #19CEB6;
+    padding: 0;
+    margin: 0;
+}
+.actual_quote {
+    font-size: .9rem !important;
+    color: #333;
+    padding: 0;
+    margin: 0;
+    font-family:"Be Vietnam", sans-serif;
+}
+.reviewer_title {
+    font-size: .8rem !important;
+    color: #333;
+    padding: 0;
+    margin: 0;
+    font-family:"Be Vietnam", sans-serif;
+    font-weight: bold;
+    text-align: right;
+}

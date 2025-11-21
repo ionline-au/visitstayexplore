@@ -1,0 +1,27 @@
+// simple jquery to hide and show content blocks
+jQuery(document).ready(function(){
+    jQuery('#but_1').click(function(){
+        jQuery('#content_1').show();
+        jQuery('#content_2').hide();
+        jQuery('#content_3').hide();
+        jQuery('#but_1').css('color','#ED5268');
+        jQuery('#but_2').css('color','#383938');
+        jQuery('#but_3').css('color','#383938');
+    });
+    jQuery('#but_2').click(function(){
+        jQuery('#content_1').hide();
+        jQuery('#content_2').show();
+        jQuery('#content_3').hide();
+        jQuery('#but_1').css('color','#383938');
+        jQuery('#but_2').css('color','#ED5268');
+        jQuery('#but_3').css('color','#383938');
+    });
+    jQuery('#but_3').click(function(){
+        jQuery('#content_1').hide();
+        jQuery('#content_2').hide();
+        jQuery('#content_3').show();
+        jQuery('#but_1').css('color','#383938');
+        jQuery('#but_2').css('color','#383938');
+        jQuery('#but_3').css('color','#ED5268');
+    });
+});

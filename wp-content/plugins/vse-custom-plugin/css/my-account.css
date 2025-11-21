@@ -1,0 +1,14 @@
+.site-main .woocommerce-button, button {
+    margin-top: 20px !important;
+    background-color: #042698 !important;
+    color: white !important;
+}
+
+.site-main a {
+    color: #042698 !important;
+}
+
+.woocommerce-Button:hover {
+    background-color: #042698 !important;
+    color: white !important;
+}

@@ -1,0 +1,5 @@
+1-adjusted the regions taxonomy to remove the word 'region' from the parent regfions (toowoomba / sommerset)
+2-renamed the child term from 'toowoomba' to 'toowoomba-general'
+
+todo
+-need to make local the default ordering type unless something is sent
