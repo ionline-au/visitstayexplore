@@ -2335,7 +2335,7 @@ function checkUserAuthorize() {
     if (empty($_GET['listing_id'])) {
         wp_die('Error - Listing ID not found.');
     }
-    if (empty($_GET['section']) || !in_array($_GET['section'], array('basics', 'branding', 'facilities', 'contact', 'submit'))) {
+    if (empty($_GET['section']) || !in_array($_GET['section'], array('basics', 'branding', 'facilities', 'contact', 'submit','finish'))) {
         wp_die('Error - Section not found.');
     }
     if (get_current_user_id() != get_post_field('post_author', $_GET['listing_id'])) {
