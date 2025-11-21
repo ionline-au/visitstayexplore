@@ -2224,6 +2224,52 @@ function edit_listing_callback() {
     wp_die();
 }
 
+add_action('wp_ajax_publish_listing', 'publish_listing_callback');
+add_action('wp_ajax_nopriv_publish_listing', 'publish_listing_callback');
+function publish_listing_callback() {
+    // Check nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'edit_listing_nonce')) {
+        wp_die('Security check failed');
+    }
+
+    // Get listing ID
+    $listing_id = isset($_POST['listing_id']) ? intval($_POST['listing_id']) : 0;
+
+    if (!$listing_id) {
+        wp_die('Invalid listing ID');
+    }
+
+    // Check if user can edit this post
+    if (!current_user_can('edit_post', $listing_id)) {
+        wp_die('You do not have permission to edit this listing');
+    }
+
+    // Update post status to published
+    $post_update = wp_update_post(array(
+        'ID' => $listing_id,
+        'post_status' => 'publish'
+    ), true);
+
+    if (is_wp_error($post_update)) {
+        set_transient('form_message_' . get_current_user_id(), array(
+            'type' => 'error',
+            'section' => 'submit',
+            'message' => 'Failed to publish listing: ' . $post_update->get_error_message()
+        ), 60);
+        wp_redirect(add_query_arg(array('section' => 'submit', 'listing_id' => $listing_id), wp_get_referer()));
+    } else {
+        // Success - redirect to finish page
+        set_transient('form_message_' . get_current_user_id(), array(
+            'type' => 'success',
+            'section' => 'finish',
+            'message' => 'Your business listing has been successfully published!'
+        ), 60);
+        wp_redirect(add_query_arg(array('section' => 'finish', 'listing_id' => $listing_id), wp_get_referer()));
+    }
+
+    wp_die();
+}
+
 add_action('wp_ajax_get_region_child_terms', 'get_region_child_terms_callback');
 add_action('wp_ajax_nopriv_get_region_child_terms', 'get_region_child_terms_callback');
 function get_region_child_terms_callback() {

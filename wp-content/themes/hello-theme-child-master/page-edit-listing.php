@@ -677,28 +677,486 @@
 
                 <?php $section = 'submit'; ?>
                 <div id="<?php echo $section; ?>_section" class="section" <?php if(isset($_GET['section']) && $_GET['section'] == $section) { echo 'style="display:block;"'; } else { echo 'style="display:none;"'; } ?>>
-                    <p class="section_heading">Submit</p>
-                    <p class="section_subheading">Tell us who you are and where you operate.</p>
-                    <form id="<?php echo $section; ?>_form" method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" enctype="multipart/form-data">
+                    <p class="section_heading">Review & Submit</p>
+                    <p class="section_subheading">Please review your business listing details before submitting.</p>
 
+                    <style>
+                        .review-section {
+                            background: #f8f9fa;
+                            border: 1px solid #e9ecef;
+                            border-radius: 8px;
+                            padding: 20px;
+                            margin-bottom: 20px;
+                        }
+                        .review-section h3 {
+                            color: #333;
+                            font-size: 18px;
+                            font-weight: 600;
+                            margin: 0 0 15px 0;
+                            padding-bottom: 10px;
+                            border-bottom: 2px solid #e9ecef;
+                        }
+                        .review-field {
+                            margin-bottom: 15px;
+                        }
+                        .review-field label {
+                            display: block;
+                            color: #6c757d;
+                            font-size: 13px;
+                            font-weight: 500;
+                            margin-bottom: 5px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        .review-field .value {
+                            color: #333;
+                            font-size: 15px;
+                            line-height: 1.6;
+                        }
+                        .review-field .value.empty {
+                            color: #999;
+                            font-style: italic;
+                        }
+                        .review-image {
+                            max-width: 150px;
+                            height: auto;
+                            border-radius: 4px;
+                            border: 1px solid #ddd;
+                        }
+                        .review-gallery {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 10px;
+                            margin-top: 10px;
+                        }
+                        .review-gallery img {
+                            width: 100px;
+                            height: 100px;
+                            object-fit: cover;
+                            border-radius: 4px;
+                            border: 1px solid #ddd;
+                        }
+                        .review-facilities {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 10px;
+                            margin-top: 5px;
+                        }
+                        .review-facilities .facility-tag {
+                            background: #007cba;
+                            color: white;
+                            padding: 4px 10px;
+                            border-radius: 4px;
+                            font-size: 13px;
+                        }
+                        .review-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 20px;
+                        }
+                        @media (max-width: 768px) {
+                            .review-grid {
+                                grid-template-columns: 1fr;
+                            }
+                        }
+                    </style>
+
+                    <?php
+                    // Helper function to get term names from IDs
+                    function getTermNames($term_ids, $taxonomy) {
+                        if (empty($term_ids)) return '';
+                        $decoded = json_decode($term_ids);
+                        if (!is_array($decoded)) {
+                            $decoded = [$term_ids];
+                        }
+                        $names = [];
+                        foreach ($decoded as $term_id) {
+                            $term = get_term($term_id, $taxonomy);
+                            if ($term && !is_wp_error($term)) {
+                                $names[] = $term->name;
+                            }
+                        }
+                        return implode(', ', $names);
+                    }
+
+                    // Helper function to get region name
+                    function getRegionName($region_id) {
+                        if (empty($region_id)) return '';
+                        $term = get_term($region_id, 'region');
+                        return ($term && !is_wp_error($term)) ? $term->name : '';
+                    }
+                    ?>
+
+                    <!-- Basic Information Review -->
+                    <div class="review-section">
+                        <h3>Basic Information</h3>
+                        <div class="review-grid">
+                            <div class="review-field">
+                                <label>Business Name</label>
+                                <div class="value <?php echo empty(get_post_meta($listing_id, 'basics_business_name', true)) ? 'empty' : ''; ?>">
+                                    <?php echo get_post_meta($listing_id, 'basics_business_name', true) ?: 'Not provided'; ?>
+                                </div>
+                            </div>
+                            <div class="review-field">
+                                <label>Region</label>
+                                <div class="value <?php echo empty(get_post_meta($listing_id, 'basics_region', true)) ? 'empty' : ''; ?>">
+                                    <?php echo getRegionName(get_post_meta($listing_id, 'basics_region', true)) ?: 'Not provided'; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-field">
+                            <label>Introduction</label>
+                            <div class="value <?php echo empty(get_post_meta($listing_id, 'basics_introduction', true)) ? 'empty' : ''; ?>">
+                                <?php echo get_post_meta($listing_id, 'basics_introduction', true) ?: 'Not provided'; ?>
+                            </div>
+                        </div>
+                        <div class="review-grid">
+                            <div class="review-field">
+                                <label>Local Service Area</label>
+                                <div class="value <?php echo empty(get_post_meta($listing_id, 'basics_localarea', true)) ? 'empty' : ''; ?>">
+                                    <?php
+                                    $localarea_raw = get_post_meta($listing_id, 'basics_localarea', true);
+                                    if (!empty($localarea_raw)) {
+                                        $decoded = json_decode($localarea_raw);
+                                        if (is_array($decoded) && count($decoded) > 0) {
+                                            echo $decoded[0];
+                                        } elseif (is_string($decoded)) {
+                                            echo $decoded;
+                                        } else {
+                                            echo $localarea_raw;
+                                        }
+                                    } else {
+                                        echo 'Not provided';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="review-field">
+                                <label>Additional Areas</label>
+                                <div class="value <?php echo empty(get_post_meta($listing_id, 'basics_additionalareas', true)) ? 'empty' : ''; ?>">
+                                    <?php
+                                    $areas = json_decode(get_post_meta($listing_id, 'basics_additionalareas', true));
+                                    echo !empty($areas) && is_array($areas) ? implode(', ', $areas) : 'Not provided';
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-field">
+                            <label>Services</label>
+                            <div class="value <?php echo empty(get_post_meta($listing_id, 'basics_services', true)) ? 'empty' : ''; ?>">
+                                <?php echo getTermNames(get_post_meta($listing_id, 'basics_services', true), 'services') ?: 'Not provided'; ?>
+                            </div>
+                        </div>
+                        <div class="review-field">
+                            <label>Licences</label>
+                            <div class="value <?php echo empty(get_post_meta($listing_id, 'basics_licences', true)) ? 'empty' : ''; ?>">
+                                <?php echo get_post_meta($listing_id, 'basics_licences', true) ?: 'Not provided'; ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Branding & Photos Review -->
+                    <div class="review-section">
+                        <h3>Branding & Photos</h3>
+                        <div class="review-grid">
+                            <div class="review-field">
+                                <label>Logo</label>
+                                <?php
+                                $logo_id = get_post_meta($listing_id, 'branding_logo', true);
+                                if ($logo_id) {
+                                    $logo_url = wp_get_attachment_image_url($logo_id, 'thumbnail');
+                                    if ($logo_url) {
+                                        echo '<img src="' . esc_url($logo_url) . '" class="review-image" alt="Logo" />';
+                                    } else {
+                                        echo '<div class="value empty">Not provided</div>';
+                                    }
+                                } else {
+                                    echo '<div class="value empty">Not provided</div>';
+                                }
+                                ?>
+                            </div>
+                            <div class="review-field">
+                                <label>Hero Banner</label>
+                                <?php
+                                $hero_id = get_post_meta($listing_id, 'branding_hero_banner', true);
+                                if ($hero_id) {
+                                    $hero_url = wp_get_attachment_image_url($hero_id, 'medium');
+                                    if ($hero_url) {
+                                        echo '<img src="' . esc_url($hero_url) . '" class="review-image" style="max-width: 300px;" alt="Hero Banner" />';
+                                    } else {
+                                        echo '<div class="value empty">Not provided</div>';
+                                    }
+                                } else {
+                                    echo '<div class="value empty">Not provided</div>';
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <div class="review-field">
+                            <label>Photo Gallery</label>
+                            <?php
+                            $gallery_images = get_field('branding_gallery', $listing_id);
+                            if (!empty($gallery_images) && is_array($gallery_images)) {
+                                echo '<div class="review-gallery">';
+                                foreach ($gallery_images as $gallery_image) {
+                                    $img_id = is_array($gallery_image) ? $gallery_image['ID'] : $gallery_image;
+                                    $img_url = wp_get_attachment_image_url($img_id, 'thumbnail');
+                                    if ($img_url) {
+                                        echo '<img src="' . esc_url($img_url) . '" alt="Gallery Image" />';
+                                    }
+                                }
+                                echo '</div>';
+                            } else {
+                                echo '<div class="value empty">No gallery images</div>';
+                            }
+                            ?>
+                        </div>
+                    </div>
+
+                    <!-- Facilities Review -->
+                    <div class="review-section">
+                        <h3>Facilities</h3>
+                        <div class="review-field">
+                            <?php
+                            $facilities = [
+                                'after_hours' => 'After Hours',
+                                'atm_on_site' => 'ATM On Site',
+                                'cash_payment' => 'Cash Payment',
+                                'credit_card' => 'Credit Card',
+                                'direct_debit' => 'Direct Debit',
+                                'delivery_service' => 'Delivery Service',
+                                'ev_charge_station' => 'EV Charge Station',
+                                'free_quotes' => 'Free Quotes',
+                                'in_store_pickup' => 'In Store Pickup',
+                                'mobile_service' => 'Mobile Service',
+                                'pensioner_discount' => 'Pensioner Discount',
+                            ];
+
+                            $selected_facilities = [];
+                            foreach ($facilities as $field_key => $display_name) {
+                                $acf_field_name = 'facilities_' . $field_key;
+                                $is_checked = get_field($acf_field_name, $listing_id);
+                                if ($is_checked == 1) {
+                                    $selected_facilities[] = $display_name;
+                                }
+                            }
+
+                            if (!empty($selected_facilities)) {
+                                echo '<div class="review-facilities">';
+                                foreach ($selected_facilities as $facility) {
+                                    echo '<span class="facility-tag">' . esc_html($facility) . '</span>';
+                                }
+                                echo '</div>';
+                            } else {
+                                echo '<div class="value empty">No facilities selected</div>';
+                            }
+                            ?>
+                        </div>
+                    </div>
+
+                    <!-- Contact & Details Review -->
+                    <div class="review-section">
+                        <h3>Contact & Details</h3>
+                        <div class="review-grid">
+                            <div class="review-field">
+                                <label>Phone</label>
+                                <div class="value <?php echo empty(get_post_meta($listing_id, 'contact_phone', true)) ? 'empty' : ''; ?>">
+                                    <?php echo get_post_meta($listing_id, 'contact_phone', true) ?: 'Not provided'; ?>
+                                </div>
+                            </div>
+                            <div class="review-field">
+                                <label>Mobile</label>
+                                <div class="value <?php echo empty(get_post_meta($listing_id, 'contact_mobile', true)) ? 'empty' : ''; ?>">
+                                    <?php echo get_post_meta($listing_id, 'contact_mobile', true) ?: 'Not provided'; ?>
+                                </div>
+                            </div>
+                            <div class="review-field">
+                                <label>Email</label>
+                                <div class="value <?php echo empty(get_post_meta($listing_id, 'contact_email', true)) ? 'empty' : ''; ?>">
+                                    <?php echo get_post_meta($listing_id, 'contact_email', true) ?: 'Not provided'; ?>
+                                </div>
+                            </div>
+                            <div class="review-field">
+                                <label>Website</label>
+                                <div class="value <?php echo empty(get_post_meta($listing_id, 'contact_website', true)) ? 'empty' : ''; ?>">
+                                    <?php
+                                    $website = get_post_meta($listing_id, 'contact_website', true);
+                                    echo $website ? '<a href="' . esc_url($website) . '" target="_blank">' . esc_html($website) . '</a>' : 'Not provided';
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-field">
+                            <label>Address</label>
+                            <div class="value <?php echo empty(get_post_meta($listing_id, 'contact_address', true)) ? 'empty' : ''; ?>">
+                                <?php echo nl2br(get_post_meta($listing_id, 'contact_address', true)) ?: 'Not provided'; ?>
+                            </div>
+                        </div>
+                        <div class="review-field">
+                            <label>Business Hours</label>
+                            <div class="value <?php echo empty(get_post_meta($listing_id, 'contact_business_hours', true)) ? 'empty' : ''; ?>">
+                                <?php echo nl2br(get_post_meta($listing_id, 'contact_business_hours', true)) ?: 'Not provided'; ?>
+                            </div>
+                        </div>
+                        <div class="review-field">
+                            <label>ABN</label>
+                            <div class="value <?php echo empty(get_post_meta($listing_id, 'contact_abn', true)) ? 'empty' : ''; ?>">
+                                <?php echo get_post_meta($listing_id, 'contact_abn', true) ?: 'Not provided'; ?>
+                            </div>
+                        </div>
+                        <div class="review-field">
+                            <label>Social Media</label>
+                            <div class="review-grid">
+                                <?php
+                                $facebook = get_post_meta($listing_id, 'contact_facebook_link', true);
+                                $instagram = get_post_meta($listing_id, 'contact_instagram_link', true);
+                                $x = get_post_meta($listing_id, 'contact_x_link', true);
+
+                                $social_links = [];
+                                if ($facebook) $social_links[] = '<a href="' . esc_url($facebook) . '" target="_blank">Facebook</a>';
+                                if ($instagram) $social_links[] = '<a href="' . esc_url($instagram) . '" target="_blank">Instagram</a>';
+                                if ($x) $social_links[] = '<a href="' . esc_url($x) . '" target="_blank">X (Twitter)</a>';
+
+                                if (!empty($social_links)) {
+                                    echo '<div class="value">' . implode(' | ', $social_links) . '</div>';
+                                } else {
+                                    echo '<div class="value empty">No social media links provided</div>';
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="<?php echo $section; ?>_form" method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" enctype="multipart/form-data">
                         <?php wp_nonce_field('edit_listing_nonce', 'nonce'); ?>
-                        <input type="hidden" name="action" value="edit_listing"/>
+                        <input type="hidden" name="action" value="publish_listing"/>
                         <input type="hidden" name="section" value="<?php echo $section; ?>"/>
                         <input type="hidden" name="listing_id" value="<?php echo $listing_id; ?>"/>
                         <input type="hidden" name="next_section" value="finish"/>
-                        <div class="flex justify-between items-center">
-                            <a href="/edit-listing?section=contact&listing_id=<?php echo $listing_id; ?>" class="button button-primary iol_button pull-right"><i aria-hidden="true" class="fas fa-arrow-left"></i> Back</a>
-                            <button type="submit" class="button button-primary iol_button pull-right">Next <i aria-hidden="true" class="fas fa-arrow-right"></i></button>
+
+                        <div class="flex justify-between items-center" style="margin-top: 30px;">
+                            <a href="/edit-listing?section=contact&listing_id=<?php echo $listing_id; ?>" class="button button-primary iol_button"><i aria-hidden="true" class="fas fa-arrow-left"></i> Back</a>
+                            <button type="submit" class="button button-primary iol_button" style="background-color: #28a745; border-color: #28a745;">Submit <i aria-hidden="true" class="fas fa-check"></i></button>
                         </div>
                         <div class="clear"></div>
-
                     </form>
                 </div>
 
                 <?php $section = 'finish'; ?>
                 <div id="<?php echo $section; ?>_section" class="section" <?php if(isset($_GET['section']) && $_GET['section'] == $section) { echo 'style="display:block;"'; } else { echo 'style="display:none;"'; } ?>>
-                    <p class="section_heading">Finish</p>
-                    <p class="section_subheading">Tell us who you are and where you operate.</p>
+                    <style>
+                        .success-container {
+                            text-align: center;
+                            padding: 40px 20px;
+                            background: #f8f9fa;
+                            border-radius: 12px;
+                            margin: 20px auto;
+                            max-width: 600px;
+                        }
+                        .success-icon {
+                            width: 80px;
+                            height: 80px;
+                            margin: 0 auto 20px;
+                            background-color: #28a745;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            animation: scaleIn 0.5s ease-in-out;
+                        }
+                        .success-icon svg {
+                            width: 40px;
+                            height: 40px;
+                            color: white;
+                        }
+                        .success-title {
+                            font-size: 28px;
+                            font-weight: bold;
+                            color: #333;
+                            margin-bottom: 15px;
+                        }
+                        .success-message {
+                            font-size: 16px;
+                            color: #666;
+                            line-height: 1.6;
+                            margin-bottom: 30px;
+                        }
+                        .success-actions {
+                            display: flex;
+                            gap: 15px;
+                            justify-content: center;
+                            flex-wrap: wrap;
+                        }
+                        @keyframes scaleIn {
+                            0% {
+                                transform: scale(0);
+                                opacity: 0;
+                            }
+                            50% {
+                                transform: scale(1.1);
+                            }
+                            100% {
+                                transform: scale(1);
+                                opacity: 1;
+                            }
+                        }
+                        @keyframes fadeInUp {
+                            0% {
+                                opacity: 0;
+                                transform: translateY(20px);
+                            }
+                            100% {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+                        .fade-in {
+                            animation: fadeInUp 0.6s ease-in-out;
+                            animation-delay: 0.3s;
+                            animation-fill-mode: both;
+                        }
+                    </style>
+
+                    <div class="success-container">
+                        <div class="success-icon">
+                            <!-- You can replace this with your preferred icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+
+                        <div class="fade-in">
+                            <h2 class="success-title">Congratulations!</h2>
+                            <p class="success-message">
+                                Your business listing has been successfully published and is now live on Visit Stay Explore!<br>
+                                Your listing will appear in search results and help customers discover your business.
+                            </p>
+
+                            <div class="success-actions">
+                                <?php if ($listing_id) : ?>
+                                    <a href="<?php echo get_permalink($listing_id); ?>" class="button button-primary iol_button" style="background-color: #28a745; border-color: #28a745;">
+                                        <i class="fas fa-eye"></i> View Your Listing
+                                    </a>
+                                <?php endif; ?>
+                                <a href="/my-account/my-listings/" class="button button-primary iol_button">
+                                    <i class="fas fa-list"></i> My Listings
+                                </a>
+                                <a href="/" class="button button-secondary iol_button" style="background: white; color: #333; border: 1px solid #ddd;">
+                                    <i class="fas fa-home"></i> Go to Homepage
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 40px; padding: 20px; background: #e8f5ff; border-left: 4px solid #007cba; border-radius: 4px;">
+                        <h4 style="margin: 0 0 10px 0; color: #007cba;">What's Next?</h4>
+                        <ul style="margin: 0; padding-left: 20px; color: #666;">
+                            <li>Your listing is now visible to customers searching in your service areas</li>
+                            <li>You can edit your listing anytime from your dashboard</li>
+                            <li>Consider adding more photos to make your listing stand out</li>
+                            <li>Keep your business hours and contact information up to date</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <?php delete_transient('form_message_' . get_current_user_id()); ?>
