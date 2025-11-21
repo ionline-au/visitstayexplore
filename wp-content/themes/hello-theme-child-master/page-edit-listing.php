@@ -396,28 +396,67 @@
                             </div>
                             <div class="col-span-2">
                                 <?php $field_name = 'gallery'; ?>
-                                <label for="<?php echo $field_name; ?>">Gallery Photo</label>
+                                <label for="<?php echo $field_name; ?>">Photo Gallery</label>
                                 <br>
                                 <?php
-                                $gallery_id = get_post_meta($listing_id, $section . '_' . $field_name, true);
-                                if ($gallery_id) {
-                                    $gallery_url = wp_get_attachment_image_url($gallery_id, 'medium');
-                                    if ($gallery_url) {
-                                        echo '<div style="margin-bottom: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
-                                        echo '<img src="' . esc_url($gallery_url) . '" style="max-width: 300px; height: auto; display: block; margin-bottom: 5px;" />';
-                                        echo '<small style="color: #666;">Current gallery photo (upload a new one to replace)</small>';
-                                        echo '</div>';
+                                // Get gallery from ACF (returns array of attachment IDs)
+                                $gallery_ids_array = get_field('gallery', $listing_id);
+                                $gallery_ids_array = is_array($gallery_ids_array) ? $gallery_ids_array : array();
+
+                                if (!empty($gallery_ids_array) && is_array($gallery_ids_array)) {
+                                    echo '<div id="gallery_preview" style="margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
+                                    echo '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">';
+
+                                    foreach ($gallery_ids_array as $img_id) {
+                                        $img_url = wp_get_attachment_image_url($img_id, 'medium');
+                                        if ($img_url) {
+                                            echo '<div class="gallery-item" style="position: relative; border: 2px solid #ddd; border-radius: 4px; overflow: hidden;">';
+                                            echo '<img src="' . esc_url($img_url) . '" style="width: 100%; height: 150px; object-fit: cover; display: block;" />';
+                                            echo '<button type="button" class="remove-gallery-image" data-image-id="' . esc_attr($img_id) . '" style="position: absolute; top: 5px; right: 5px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-size: 14px; line-height: 1; padding: 0;">×</button>';
+                                            echo '</div>';
+                                        }
                                     }
+
+                                    echo '</div>';
+                                    echo '<small style="color: #666; display: block; margin-top: 10px;">Click × to remove individual photos</small>';
+                                    echo '</div>';
                                 }
                                 ?>
-                                <input name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" type="file" class="file_input" accept="image/jpeg,image/jpg,image/png,image/webp" />
+                                <input name="<?php echo $field_name; ?>[]" id="<?php echo $field_name; ?>" type="file" class="file_input" accept="image/jpeg,image/jpg,image/png,image/webp" multiple />
+                                <input type="hidden" name="gallery_removed_ids" id="gallery_removed_ids" value="" />
                                 <?php renderErrorFieldMessage($field_name, $section) ?>
                                 <div class="information flex flex-row justify-start! items-center" style="margin-top:5px;">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                                         <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
                                     </svg>
-                                    <div class="ml-1">PNG/JPG/WebP. Max 5MB. (Optional)</div>
+                                    <div class="ml-1">Select multiple photos. PNG/JPG/WebP. Max 5MB each. (Optional)</div>
                                 </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const removedIdsInput = document.getElementById('gallery_removed_ids');
+                                        const removeButtons = document.querySelectorAll('.remove-gallery-image');
+                                        let removedIds = [];
+
+                                        removeButtons.forEach(function(button) {
+                                            button.addEventListener('click', function(e) {
+                                                e.preventDefault();
+                                                const imageId = this.getAttribute('data-image-id');
+                                                removedIds.push(imageId);
+                                                removedIdsInput.value = JSON.stringify(removedIds);
+
+                                                // Remove the gallery item visually
+                                                this.closest('.gallery-item').remove();
+
+                                                // If no more images, remove the preview container
+                                                const galleryItems = document.querySelectorAll('.gallery-item');
+                                                if (galleryItems.length === 0) {
+                                                    const preview = document.getElementById('gallery_preview');
+                                                    if (preview) preview.remove();
+                                                }
+                                            });
+                                        });
+                                    });
+                                </script>
                             </div>
                         </div>
 

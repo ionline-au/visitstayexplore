@@ -2024,15 +2024,53 @@ function edit_listing_callback() {
                 $errorBag['hero_banner'] = 'Hero banner is required.';
             }
 
-            // Handle gallery upload (optional for now)
-            if (isset($_FILES['gallery']) && !empty($_FILES['gallery']['name'])) {
-                $gallery_id = handle_image_upload('gallery', $data['listing_id']);
-                if (is_wp_error($gallery_id)) {
-                    $errorBag['gallery'] = $gallery_id->get_error_message();
-                } else {
-                    // Gallery could be multiple images, for now storing single ID
-                    update_post_meta($data['listing_id'], $data['section'].'_gallery', $gallery_id);
+            // Handle gallery uploads (multiple images) - stored in ACF
+            $existing_gallery = get_field('gallery', $data['listing_id']); // ACF returns array of IDs
+            $gallery_ids_array = is_array($existing_gallery) ? $existing_gallery : array();
+
+            // Remove deleted images
+            if (!empty($data['gallery_removed_ids'])) {
+                $removed_ids = json_decode($data['gallery_removed_ids'], true);
+                if (is_array($removed_ids)) {
+                    $gallery_ids_array = array_diff($gallery_ids_array, array_map('intval', $removed_ids));
                 }
+            }
+
+            // Handle new gallery uploads
+            if (isset($_FILES['gallery']) && !empty($_FILES['gallery']['name'][0])) {
+                $files = $_FILES['gallery'];
+                $file_count = count($files['name']);
+
+                for ($i = 0; $i < $file_count; $i++) {
+                    if (empty($files['name'][$i])) {
+                        continue;
+                    }
+
+                    // Reconstruct $_FILES array for single file
+                    $_FILES['gallery_single'] = array(
+                        'name'     => $files['name'][$i],
+                        'type'     => $files['type'][$i],
+                        'tmp_name' => $files['tmp_name'][$i],
+                        'error'    => $files['error'][$i],
+                        'size'     => $files['size'][$i]
+                    );
+
+                    $gallery_img_id = handle_image_upload('gallery_single', $data['listing_id']);
+                    if (is_wp_error($gallery_img_id)) {
+                        $errorBag['gallery'] = $gallery_img_id->get_error_message();
+                        break;
+                    } else {
+                        $gallery_ids_array[] = $gallery_img_id;
+                    }
+                }
+            }
+
+            // Save to ACF gallery field (ACF handles the storage)
+            if (!empty($gallery_ids_array)) {
+                $gallery_ids_array = array_values(array_map('intval', $gallery_ids_array)); // Clean array
+                update_field('gallery', $gallery_ids_array, $data['listing_id']);
+            } else {
+                delete_field('gallery', $data['listing_id']);
             }
 
             break;
