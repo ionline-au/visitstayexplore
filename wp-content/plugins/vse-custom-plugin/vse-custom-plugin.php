@@ -2024,15 +2024,38 @@ function edit_listing_callback() {
                 $errorBag['hero_banner'] = 'Hero banner is required.';
             }
 
-            // Handle gallery uploads (multiple images) - stored in ACF
-            $existing_gallery = get_field('gallery', $data['listing_id']); // ACF returns array of IDs
-            $gallery_ids_array = is_array($existing_gallery) ? $existing_gallery : array();
+            // Handle gallery uploads (multiple images) - stored in ACF field 'branding_gallery'
+            // Get existing gallery from ACF - returns array format
+            $gallery_field_name = $data['section'] . '_gallery';
+            $existing_gallery = get_field($gallery_field_name, $data['listing_id']);
 
-            // Remove deleted images
+            // ACF Gallery returns an array - normalize to just IDs
+            $gallery_ids_array = array();
+            if (is_array($existing_gallery)) {
+                foreach ($existing_gallery as $item) {
+                    if (is_array($item) && isset($item['ID'])) {
+                        // ACF returns array format with ID key
+                        $gallery_ids_array[] = (int) $item['ID'];
+                    } elseif (is_numeric($item)) {
+                        // Just in case ACF is set to return IDs only
+                        $gallery_ids_array[] = (int) $item;
+                    }
+                }
+            }
+
+            // Track if any changes were made to the gallery
+            $gallery_modified = false;
+
+            // Remove deleted images if any
             if (!empty($data['gallery_removed_ids'])) {
-                $removed_ids = json_decode($data['gallery_removed_ids'], true);
-                if (is_array($removed_ids)) {
+                // Handle escaped JSON - stripslashes to remove the escape characters
+                // The JSON comes in as [\"116057\",\"116056\"] and needs to be ["116057","116056"]
+                $gallery_removed_json = stripslashes($data['gallery_removed_ids']);
+                $removed_ids = json_decode($gallery_removed_json, true);
+
+                if (is_array($removed_ids) && count($removed_ids) > 0) {
                     $gallery_ids_array = array_diff($gallery_ids_array, array_map('intval', $removed_ids));
+                    $gallery_modified = true;
                 }
             }
 
@@ -2057,21 +2080,28 @@ function edit_listing_callback() {
 
                     $gallery_img_id = handle_image_upload('gallery_single', $data['listing_id']);
                     if (is_wp_error($gallery_img_id)) {
-                        $errorBag['gallery'] = $gallery_img_id->get_error_message();
+                        $errorBag['gallery'] = 'Error uploading image: ' . $gallery_img_id->get_error_message();
                         break;
                     } else {
-                        $gallery_ids_array[] = $gallery_img_id;
+                        $gallery_ids_array[] = (int) $gallery_img_id;
+                        $gallery_modified = true;
                     }
                 }
             }
 
-            // Save to ACF gallery field (ACF handles the storage)
-            if (!empty($gallery_ids_array)) {
-                $gallery_ids_array = array_values(array_map('intval', $gallery_ids_array)); // Clean array
-                update_field('gallery', $gallery_ids_array, $data['listing_id']);
-            } else {
-                delete_field('gallery', $data['listing_id']);
+            // Only update ACF field if there were changes OR if we have images to preserve
+            if ($gallery_modified || !empty($gallery_ids_array)) {
+                // Clean array, remove duplicates and reindex
+                $gallery_ids_array = array_values(array_unique(array_map('intval', $gallery_ids_array)));
+
+                // Save to ACF gallery field - ACF will handle the array format based on field settings
+                update_field($gallery_field_name, $gallery_ids_array, $data['listing_id']);
             }
+            // If gallery is empty AND user explicitly removed all images, clear the field
+            elseif (empty($gallery_ids_array) && $gallery_modified) {
+                delete_field($gallery_field_name, $data['listing_id']);
+            }
+            // Otherwise, leave the existing gallery unchanged
 
             break;
         case 'facilities':

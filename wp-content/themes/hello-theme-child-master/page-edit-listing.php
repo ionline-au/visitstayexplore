@@ -399,15 +399,22 @@
                                 <label for="<?php echo $field_name; ?>">Photo Gallery</label>
                                 <br>
                                 <?php
-                                // Get gallery from ACF (returns array of attachment IDs)
-                                $gallery_ids_array = get_field('gallery', $listing_id);
-                                $gallery_ids_array = is_array($gallery_ids_array) ? $gallery_ids_array : array();
+                                // Get gallery from ACF (field name: 'gallery') - returns array format
+                                $gallery_images = get_field($section . '_' . $field_name, $listing_id);
+                                $gallery_images = is_array($gallery_images) ? $gallery_images : array();
 
-                                if (!empty($gallery_ids_array) && is_array($gallery_ids_array)) {
+                                if (!empty($gallery_images)) {
                                     echo '<div id="gallery_preview" style="margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 4px;">';
                                     echo '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">';
 
-                                    foreach ($gallery_ids_array as $img_id) {
+                                    foreach ($gallery_images as $gallery_image) {
+                                        // Handle both Image ID and Image Array formats
+                                        if (is_array($gallery_image)) {
+                                            $img_id = $gallery_image['ID'];
+                                        } else {
+                                            $img_id = $gallery_image;
+                                        }
+
                                         $img_url = wp_get_attachment_image_url($img_id, 'medium');
                                         if ($img_url) {
                                             echo '<div class="gallery-item" style="position: relative; border: 2px solid #ddd; border-radius: 4px; overflow: hidden;">';
