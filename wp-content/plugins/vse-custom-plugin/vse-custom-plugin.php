@@ -1859,15 +1859,10 @@ function remove_spam_customer_users()
 add_action('wp_enqueue_scripts', 'enqueue_edit_listing_scripts_styles');
 function enqueue_edit_listing_scripts_styles() {
     if (is_page('edit-listing')) {
-
         wp_enqueue_style('tomselect','https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css');
         wp_enqueue_script('tomselect','https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js');
-        // wp_enqueue_script('tomselect-custom', plugins_url('js/tomselect.js', __FILE__), array('jquery'));
         wp_enqueue_script('tailwind','https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4');
         wp_enqueue_style('edit-listing', plugin_dir_url(__FILE__) . 'css/edit-listing.css?'.uniqid());
-
-
-
         wp_enqueue_script('flag_message', plugins_url('js/flag_message.js', __FILE__), array('jquery'));
     }
 }
@@ -1875,8 +1870,6 @@ function enqueue_edit_listing_scripts_styles() {
 //ini_set('display_errors', 1);
 //ini_set('display_startup_errors', 1);
 //error_reporting(E_ALL);
-
-// @todo: make sure that the field names line up with acf
 
 /**
  * Handle image upload to WordPress media library
